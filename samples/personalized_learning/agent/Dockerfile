@@ -12,6 +12,11 @@ COPY *.py ./
 # Create learner context directory
 RUN mkdir -p /app/learner_context
 
+# Create non-root user
+RUN useradd -m -u 1000 -s /bin/bash appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
 # Set environment variables
 ENV PORT=8080
 # GOOGLE_CLOUD_PROJECT must be set at runtime

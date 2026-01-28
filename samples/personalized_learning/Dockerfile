@@ -25,6 +25,11 @@ RUN npm install --registry https://registry.npmjs.org/
 # Build the Vite frontend
 RUN npm run build
 
+# Create non-root user
+RUN useradd -m -u 1000 -s /bin/bash appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
 # Set production environment
 ENV PORT=8080
 ENV NODE_ENV=production
