@@ -1,25 +1,24 @@
 """
-PMOVES.AI Common Types Module for pmoves-cipher-mcp
-
-Shared type definitions for the Cipher MCP bridge.
+Common utilities and shared definitions for PMOVES.AI services.
 """
 
 from enum import Enum
 
 
 class ServiceTier(str, Enum):
-    """PMOVES service tiers (6-tier architecture)."""
+    """PMOVES service environment tiers (deployment/resource classification, not network tiers)."""
     DATA = "data"
     API = "api"
     LLM = "llm"
     WORKER = "worker"
     MEDIA = "media"
     AGENT = "agent"
+    UI = "ui"
 
     @classmethod
     def is_valid(cls, value: str) -> bool:
         """Check if a string value is a valid tier."""
-        return value in (t.value for t in cls)
+        return value in cls._value2member_map_
 
 
 class HealthStatus(str, Enum):
@@ -27,6 +26,11 @@ class HealthStatus(str, Enum):
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
+
+    @classmethod
+    def is_valid(cls, value: str) -> bool:
+        """Check if a string value is a valid health status."""
+        return value in cls._value2member_map_
 
 
 class MemoryCategory(str, Enum):
@@ -37,6 +41,11 @@ class MemoryCategory(str, Enum):
     SUBMODULE = "submodule"
     ARCHITECTURE = "architecture"
     REASONING = "reasoning"
+
+    @classmethod
+    def is_valid(cls, value: str) -> bool:
+        """Check if a string value is a valid memory category."""
+        return value in cls._value2member_map_
 
 
 __all__ = [
