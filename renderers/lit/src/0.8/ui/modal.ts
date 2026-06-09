@@ -1,28 +1,28 @@
 /*
- Copyright 2025 Google LLC
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      https://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import { html, css, nothing } from "lit";
-import { customElement, query, state } from "lit/decorators.js";
-import { Root } from "./root.js";
-import { classMap } from "lit/directives/class-map.js";
-import { styleMap } from "lit/directives/style-map.js";
-import { structuralStyles } from "./styles.js";
-import { ref } from "lit/directives/ref.js";
+import {html, css, nothing} from 'lit';
+import {customElement, query, state} from 'lit/decorators.js';
+import {Root} from './root.js';
+import {classMap} from 'lit/directives/class-map.js';
+import {styleMap} from 'lit/directives/style-map.js';
+import {structuralStyles} from './styles.js';
+import {ref} from 'lit/directives/ref.js';
 
-@customElement("a2ui-modal")
+@customElement('a2ui-modal')
 export class Modal extends Root {
   static styles = [
     structuralStyles,
@@ -60,7 +60,7 @@ export class Modal extends Root {
   @state()
   accessor #showModal = false;
 
-  @query("dialog")
+  @query('dialog')
   accessor #modalRef: HTMLDialogElement | null = null;
 
   #closeModal() {
@@ -112,14 +112,14 @@ export class Modal extends Root {
       <section
         class=${classMap(this.theme.components.Modal.element)}
         style=${this.theme.additionalStyles?.Modal
-        ? styleMap(this.theme.additionalStyles?.Modal)
-        : nothing}
+          ? styleMap(this.theme.additionalStyles?.Modal)
+          : nothing}
       >
         <div id="controls">
           <button
             @click=${() => {
-        this.#closeModal();
-      }}
+              this.#closeModal();
+            }}
           >
             <span class="g-icon">close</span>
           </button>

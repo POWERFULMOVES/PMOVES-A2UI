@@ -1,17 +1,17 @@
 /*
- Copyright 2025 Google LLC
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      https://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import * as Styles from '@a2ui/web_core/styles/index';
@@ -160,16 +160,16 @@ const video = {
   'layout-el-cv': true,
 };
 
-const aLight = Styles.merge(a, { 'color-c-n5': true });
-const inputLight = Styles.merge(input, { 'color-c-n5': true });
-const textareaLight = Styles.merge(textarea, { 'color-c-n5': true });
-const buttonLight = Styles.merge(button, { 'color-c-n100': true });
-const h1Light = Styles.merge(h1, { 'color-c-n5': true });
-const h2Light = Styles.merge(h2, { 'color-c-n5': true });
-const h3Light = Styles.merge(h3, { 'color-c-n5': true });
-const bodyLight = Styles.merge(body, { 'color-c-n5': true });
-const pLight = Styles.merge(p, { 'color-c-n35': true });
-const preLight = Styles.merge(pre, { 'color-c-n35': true });
+const aLight = Styles.merge(a, {'color-c-n5': true});
+const inputLight = Styles.merge(input, {'color-c-n5': true});
+const textareaLight = Styles.merge(textarea, {'color-c-n5': true});
+const buttonLight = Styles.merge(button, {'color-c-n100': true});
+const h1Light = Styles.merge(h1, {'color-c-n5': true});
+const h2Light = Styles.merge(h2, {'color-c-n5': true});
+const h3Light = Styles.merge(h3, {'color-c-n5': true});
+const bodyLight = Styles.merge(body, {'color-c-n5': true});
+const pLight = Styles.merge(p, {'color-c-n35': true});
+const preLight = Styles.merge(pre, {'color-c-n35': true});
 const orderedListLight = Styles.merge(orderedList, {
   'color-c-n35': true,
 });
@@ -200,7 +200,7 @@ export const theme: Types.Theme = {
       'color-c-n100': true,
       'behavior-ho-70': true,
     },
-    Card: { 'border-br-9': true, 'color-bgc-p100': true, 'layout-p-4': true },
+    Card: {'border-br-9': true, 'color-bgc-p100': true, 'layout-p-4': true},
     CheckBox: {
       element: {
         'layout-m-0': true,
@@ -268,7 +268,7 @@ export const theme: Types.Theme = {
       'layout-p-2': true,
     },
     Modal: {
-      backdrop: { 'color-bbgc-p60_20': true },
+      backdrop: {'color-bbgc-p60_20': true},
       element: {
         'border-br-2': true,
         'color-bgc-p100': true,
@@ -293,7 +293,7 @@ export const theme: Types.Theme = {
     },
     Tabs: {
       container: {},
-      controls: { all: {}, selected: {} },
+      controls: {all: {}, selected: {}},
       element: {},
     },
     Text: {

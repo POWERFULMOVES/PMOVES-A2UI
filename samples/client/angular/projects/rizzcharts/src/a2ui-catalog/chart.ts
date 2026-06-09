@@ -1,31 +1,40 @@
 /*
- Copyright 2025 Google LLC
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      https://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import { DynamicComponent } from '@a2ui/angular';
+import {DynamicComponent} from '@a2ui/angular';
 import * as Primitives from '@a2ui/web_core/types/primitives';
 import * as Types from '@a2ui/web_core/types/types';
-import { Component, computed, input, Signal, signal, ViewChild } from '@angular/core';
-import { MatIconButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { ChartData, ChartEvent, ChartOptions, ChartType, LegendItem } from 'chart.js';
-import { BaseChartDirective } from 'ng2-charts';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  Signal,
+  signal,
+  ViewChild,
+} from '@angular/core';
+import {MatIconButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
+import {ChartData, ChartEvent, ChartOptions, ChartType, LegendItem} from 'chart.js';
+import {BaseChartDirective} from 'ng2-charts';
 
 @Component({
   selector: 'a2ui-chart',
   imports: [BaseChartDirective, MatIconButton, MatIcon],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     :host {
       display: block;
@@ -146,7 +155,7 @@ export class Chart extends DynamicComponent<Types.CustomNode> {
       if (!allData) {
         return undefined;
       }
-      return { ...allData.get(selectedCategory) } as ChartData<'pie', number[], string>;
+      return {...allData.get(selectedCategory)} as ChartData<'pie', number[], string>;
     },
   );
 
@@ -190,8 +199,8 @@ export class Chart extends DynamicComponent<Types.CustomNode> {
     if (pathPrefix?.path) {
       for (let index: number = 0; index < 500; index++) {
         const itemPrefix = `${pathPrefix.path}[${index}]`;
-        const labelPath: Primitives.StringValue = { path: `${itemPrefix}.label` };
-        const valuePath: Primitives.NumberValue = { path: `${itemPrefix}.value` };
+        const labelPath: Primitives.StringValue = {path: `${itemPrefix}.label`};
+        const valuePath: Primitives.NumberValue = {path: `${itemPrefix}.value`};
         const label = super.resolvePrimitive(labelPath);
         const value = super.resolvePrimitive(valuePath);
         if (label === null || value === null) {
@@ -248,7 +257,7 @@ export class Chart extends DynamicComponent<Types.CustomNode> {
     this.selectedCategory.set('root');
   }
 
-  protected onClick(e: { event?: ChartEvent; active?: any[] | undefined }) {
+  protected onClick(e: {event?: ChartEvent; active?: any[] | undefined}) {
     const active = e.active;
     if (!active || active.length === 0) return;
 
