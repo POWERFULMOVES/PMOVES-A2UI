@@ -12,69 +12,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Angular build and test
+name: Angular
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
-      - 'samples/agent/adk/**'
+      - "samples/agent/adk/**"
   pull_request:
     paths-ignore:
-      - 'samples/agent/adk/**'
+      - "samples/agent/adk/**"
+
+permissions:
+  contents: read
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        task: [test, restaurant, rizzcharts, orchestrator, explorer]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: "22"
 
-      - name: Install web_core dependencies
-        working-directory: ./renderers/web_core
-        run: npm i
-
-      - name: Build web_core
-        working-directory: ./renderers/web_core
-        run: npm run build
-
-      - name: Install web lib deps
-        working-directory: ./renderers/lit
-        run: npm i
-
-      - name: Build web lib
-        working-directory: ./renderers/lit
-        run: npm run build
-
-      - name: Install renderer deps
-        working-directory: ./renderers/angular
-        run: npm i
-
-      - name: Build Angular renderer
-        working-directory: ./renderers/angular
-        run: npm run build
+      - name: Cache Node modules and Wireit
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            **/.wireit
+          key: ${{ runner.os }}-node-and-wireit-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-and-wireit-
 
       - name: Install top-level deps
         working-directory: ./samples/client/angular
         run: npm i
 
-      - name: Build contact sample
-        working-directory: ./samples/client/angular
-        run: npm run build contact
-
-      - name: Build restaurant sample
-        working-directory: ./samples/client/angular
-        run: npm run build restaurant
-
-      - name: Build Rizzchart sample
-        working-directory: ./samples/client/angular
-        run: npm run build rizzcharts
-
-      - name: Build Orchestrator
-        working-directory: ./samples/client/angular
-        run: npm run build orchestrator
+      - name: Run task
+        run: |
+          case "${{ matrix.task }}" in
+            test)
+              cd ./renderers/angular && npm run test:ci
+              ;;
+            explorer)
+              cd ./renderers/angular && npx ng test a2ui_explorer --watch=false --browsers=ChromeHeadless
+              ;;
+            restaurant)
+              cd ./samples/client/angular && npm run build restaurant
+              ;;
+            rizzcharts)
+              cd ./samples/client/angular && npm run build rizzcharts
+              ;;
+            orchestrator)
+              cd ./samples/client/angular && npm run build orchestrator
+              ;;
+          esac

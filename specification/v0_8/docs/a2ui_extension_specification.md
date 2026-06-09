@@ -41,7 +41,7 @@ Example AgentExtension block:
   "required": false,
   "params": {
     "supportedCatalogIds": [
-      "https://github.com/google/A2UI/blob/main/specification/v0_8/json/standard_catalog_definition.json",
+      "https://a2ui.org/specification/v0_8/standard_catalog_definition.json",
       "https://my-company.com/a2ui/v0.8/my_custom_catalog.json"
     ],
     "acceptsInlineCatalogs": true
@@ -50,10 +50,12 @@ Example AgentExtension block:
 ```
 
 ### Parameter definitions
+
 - `params.supportedCatalogIds`: (OPTIONAL) An array of strings, where each string is a URI pointing to a component Catalog Definition Schema that the agent can generate.
 - `params.acceptsInlineCatalogs`: (OPTIONAL) A boolean indicating if the agent can accept an `inlineCatalogs` array in the client's `a2uiClientCapabilities`. If omitted, this defaults to `false`.
 
 ## Extension activation
+
 Clients indicate their desire to use the A2UI extension by specifying it via the transport-defined A2A extension activation mechanism.
 
 For JSON-RPC and HTTP transports, this is indicated via the X-A2A-Extensions HTTP header.
@@ -78,7 +80,7 @@ Example A2UI DataPart:
 {
   "data": {
     "beginRendering": {
-      "surfaceId": "outlier_stores_map_surface",
+      "surfaceId": "outlier_stores_map_surface"
     }
   },
   "kind": "data",

@@ -1,36 +1,36 @@
-# A2UI Generator
+# Restaurant finder - Lit UI with Python agent
 
-This is a UI to generate and visualize A2UI responses.
+See the [video](https://github.com/user-attachments/assets/2a406115-3a17-4bea-8000-ac12e0b7b9bd) on how it works.
 
 ## Prerequisites
 
-1. [nodejs](https://nodejs.org/en)
+- [nodejs](https://nodejs.org/en)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
 
 ## Running
 
-This sample depends on the Lit renderer. Before running this sample, you need to build the renderer.
+### Run agent
 
-1. **Build the renderer:**
-   ```bash
-   cd ../../../renderers/web_core
-   npm install
-   npm run build
-   cd ../lit
-   npm install
-   npm run build
-   ```
+Follow the steps in [agent's README.md](../../../agent/adk/restaurant_finder/README.md) to run agent.
 
-2. **Run this sample:**
-   ```bash
-   cd - # back to the sample directory
-   npm install
-   ```
+### Build dependencies and run client application
 
-3. **Run the servers:**
-   - Run the [A2A server](../../../agent/adk/restaurant_finder/)
-   - Run the dev server: `npm run dev`
+Run from the root of the repository:
 
-After starting the dev server, you can open http://localhost:5173/ to view the sample.
+```bash
+(cd renderers/web_core/ && npm i && npm run build) && \
+(cd renderers/markdown/markdown-it/ && npm i && npm run build) && \
+(cd renderers/lit/ && npm i && npm run build) && \
+(cd samples/client/lit/shell/ && npm i && npm run dev)
+```
+
+If you hit errors around `npm i` remove the directory `node_modules` and the file `package-lock.json`.
+
+### Open UI
+
+Follow the link in console output of the last command above.
+
+## Security Notice
 
 Important: The sample code provided is for demonstration purposes and illustrates the mechanics of A2UI and the Agent-to-Agent (A2A) protocol. When building production applications, it is critical to treat any agent operating outside of your direct control as a potentially untrusted entity.
 

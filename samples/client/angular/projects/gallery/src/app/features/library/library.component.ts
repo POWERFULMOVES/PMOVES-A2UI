@@ -1,21 +1,21 @@
 /*
- Copyright 2025 Google LLC
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      https://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { Surface } from '@a2ui/angular';
+import {ChangeDetectionStrategy, Component, ElementRef, ViewChild} from '@angular/core';
+import {Surface} from '@a2ui/angular';
 import * as Types from '@a2ui/web_core/types/types';
 
 @Component({
@@ -23,14 +23,15 @@ import * as Types from '@a2ui/web_core/types/types';
   imports: [Surface],
   templateUrl: './library.html',
   styleUrl: './library.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LibraryComponent {
   @ViewChild('dialog') dialog!: ElementRef<HTMLDialogElement>;
-  selectedBlock: { name: string; surface: Types.Surface } | null = null;
+  selectedBlock: {name: string; surface: Types.Surface} | null = null;
   activeSection = '';
   showJsonId: string | null = null;
 
-  openDialog(block: { name: string; surface: Types.Surface }) {
+  openDialog(block: {name: string; surface: Types.Surface}) {
     this.selectedBlock = block;
     this.dialog.nativeElement.showModal();
   }
@@ -43,7 +44,7 @@ export class LibraryComponent {
     this.activeSection = name;
     const element = document.getElementById('section-' + name);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      element.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
   }
 
@@ -96,7 +97,7 @@ export class LibraryComponent {
       name: 'Card',
       tag: 'Layout',
       surface: this.createSingleComponentSurface('Card', {
-        child: this.createComponent('Text', { text: { literalString: 'Content inside a card' } }),
+        child: this.createComponent('Text', {text: {literalString: 'Content inside a card'}}),
       }),
     },
     {
@@ -104,9 +105,9 @@ export class LibraryComponent {
       tag: 'Layout',
       surface: this.createSingleComponentSurface('Column', {
         children: [
-          this.createComponent('Text', { text: { literalString: 'Item 1' } }),
-          this.createComponent('Text', { text: { literalString: 'Item 2' } }),
-          this.createComponent('Text', { text: { literalString: 'Item 3' } }),
+          this.createComponent('Text', {text: {literalString: 'Item 1'}}),
+          this.createComponent('Text', {text: {literalString: 'Item 2'}}),
+          this.createComponent('Text', {text: {literalString: 'Item 3'}}),
         ],
         alignment: 'center',
         distribution: 'space-around',
@@ -117,9 +118,9 @@ export class LibraryComponent {
       tag: 'Layout',
       surface: this.createSingleComponentSurface('Column', {
         children: [
-          this.createComponent('Text', { text: { literalString: 'Above Divider' } }),
+          this.createComponent('Text', {text: {literalString: 'Above Divider'}}),
           this.createComponent('Divider', {}),
-          this.createComponent('Text', { text: { literalString: 'Below Divider' } }),
+          this.createComponent('Text', {text: {literalString: 'Below Divider'}}),
         ],
       }),
     },
@@ -128,9 +129,9 @@ export class LibraryComponent {
       tag: 'Layout',
       surface: this.createSingleComponentSurface('List', {
         children: [
-          this.createComponent('Text', { text: { literalString: 'List Item 1' } }),
-          this.createComponent('Text', { text: { literalString: 'List Item 2' } }),
-          this.createComponent('Text', { text: { literalString: 'List Item 3' } }),
+          this.createComponent('Text', {text: {literalString: 'List Item 1'}}),
+          this.createComponent('Text', {text: {literalString: 'List Item 2'}}),
+          this.createComponent('Text', {text: {literalString: 'List Item 3'}}),
         ],
         direction: 'vertical',
       }),
@@ -140,12 +141,12 @@ export class LibraryComponent {
       tag: 'Layout',
       surface: this.createSingleComponentSurface('Modal', {
         entryPointChild: this.createComponent('Button', {
-          action: { type: 'none' },
-          child: this.createComponent('Text', { text: { literalString: 'Open Modal' } }),
+          action: {type: 'none'},
+          child: this.createComponent('Text', {text: {literalString: 'Open Modal'}}),
         }),
         contentChild: this.createComponent('Card', {
           child: this.createComponent('Text', {
-            text: { literalString: 'This is the modal content.' },
+            text: {literalString: 'This is the modal content.'},
           }),
         }),
       }),
@@ -155,9 +156,9 @@ export class LibraryComponent {
       tag: 'Layout',
       surface: this.createSingleComponentSurface('Row', {
         children: [
-          this.createComponent('Text', { text: { literalString: 'Left' } }),
-          this.createComponent('Text', { text: { literalString: 'Center' } }),
-          this.createComponent('Text', { text: { literalString: 'Right' } }),
+          this.createComponent('Text', {text: {literalString: 'Left'}}),
+          this.createComponent('Text', {text: {literalString: 'Center'}}),
+          this.createComponent('Text', {text: {literalString: 'Right'}}),
         ],
         alignment: 'center',
         distribution: 'space-between',
@@ -169,12 +170,12 @@ export class LibraryComponent {
       surface: this.createSingleComponentSurface('Tabs', {
         tabItems: [
           {
-            title: { literalString: 'Tab 1' },
-            child: this.createComponent('Text', { text: { literalString: 'Content for Tab 1' } }),
+            title: {literalString: 'Tab 1'},
+            child: this.createComponent('Text', {text: {literalString: 'Content for Tab 1'}}),
           },
           {
-            title: { literalString: 'Tab 2' },
-            child: this.createComponent('Text', { text: { literalString: 'Content for Tab 2' } }),
+            title: {literalString: 'Tab 2'},
+            child: this.createComponent('Text', {text: {literalString: 'Content for Tab 2'}}),
           },
         ],
       }),
@@ -184,10 +185,10 @@ export class LibraryComponent {
       tag: 'Layout',
       surface: this.createSingleComponentSurface('Column', {
         children: [
-          this.createComponent('Heading', { text: { literalString: 'Heading Text' } }),
-          this.createComponent('Text', { text: { literalString: 'Standard body text.' } }),
+          this.createComponent('Heading', {text: {literalString: 'Heading Text'}}),
+          this.createComponent('Text', {text: {literalString: 'Standard body text.'}}),
           this.createComponent('Text', {
-            text: { literalString: 'Caption text' },
+            text: {literalString: 'Caption text'},
             usageHint: 'caption',
           }),
         ],
@@ -198,7 +199,7 @@ export class LibraryComponent {
       name: 'AudioPlayer',
       tag: 'Media',
       surface: this.createSingleComponentSurface('AudioPlayer', {
-        url: { literalString: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+        url: {literalString: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'},
       }),
     },
     {
@@ -206,9 +207,9 @@ export class LibraryComponent {
       tag: 'Media',
       surface: this.createSingleComponentSurface('Row', {
         children: [
-          this.createComponent('Icon', { name: { literalString: 'home' } }),
-          this.createComponent('Icon', { name: { literalString: 'favorite' } }),
-          this.createComponent('Icon', { name: { literalString: 'settings' } }),
+          this.createComponent('Icon', {name: {literalString: 'home'}}),
+          this.createComponent('Icon', {name: {literalString: 'favorite'}}),
+          this.createComponent('Icon', {name: {literalString: 'settings'}}),
         ],
         distribution: 'space-around',
       }),
@@ -217,7 +218,7 @@ export class LibraryComponent {
       name: 'Image',
       tag: 'Media',
       surface: this.createSingleComponentSurface('Image', {
-        url: { literalString: 'https://picsum.photos/id/10/300/200' },
+        url: {literalString: 'https://picsum.photos/id/10/300/200'},
       }),
     },
     {
@@ -236,14 +237,14 @@ export class LibraryComponent {
       surface: this.createSingleComponentSurface('Row', {
         children: [
           this.createComponent('Button', {
-            label: { literalString: 'Primary' },
-            action: { type: 'click' },
-            child: this.createComponent('Text', { text: { literalString: 'Primary' } }),
+            label: {literalString: 'Primary'},
+            action: {type: 'click'},
+            child: this.createComponent('Text', {text: {literalString: 'Primary'}}),
           }),
           this.createComponent('Button', {
-            label: { literalString: 'Secondary' },
-            action: { type: 'click' },
-            child: this.createComponent('Text', { text: { literalString: 'Secondary' } }),
+            label: {literalString: 'Secondary'},
+            action: {type: 'click'},
+            child: this.createComponent('Text', {text: {literalString: 'Secondary'}}),
           }),
         ],
         distribution: 'space-around',
@@ -255,12 +256,12 @@ export class LibraryComponent {
       surface: this.createSingleComponentSurface('Column', {
         children: [
           this.createComponent('CheckBox', {
-            label: { literalString: 'Unchecked' },
-            value: { literalBoolean: false },
+            label: {literalString: 'Unchecked'},
+            value: {literalBoolean: false},
           }),
           this.createComponent('CheckBox', {
-            label: { literalString: 'Checked' },
-            value: { literalBoolean: true },
+            label: {literalString: 'Checked'},
+            value: {literalBoolean: true},
           }),
         ],
       }),
@@ -273,12 +274,12 @@ export class LibraryComponent {
           this.createComponent('DateTimeInput', {
             enableDate: true,
             enableTime: false,
-            value: { literalString: '2025-12-09' },
+            value: {literalString: '2025-12-09'},
           }),
           this.createComponent('DateTimeInput', {
             enableDate: true,
             enableTime: true,
-            value: { literalString: '2025-12-09T12:00:00' },
+            value: {literalString: '2025-12-09T12:00:00'},
           }),
         ],
       }),
@@ -288,18 +289,18 @@ export class LibraryComponent {
       tag: 'Inputs',
       surface: this.createSingleComponentSurface('MultipleChoice', {
         options: [
-          { value: 'opt1', label: { literalString: 'Option 1' } },
-          { value: 'opt2', label: { literalString: 'Option 2' } },
-          { value: 'opt3', label: { literalString: 'Option 3' } },
+          {value: 'opt1', label: {literalString: 'Option 1'}},
+          {value: 'opt2', label: {literalString: 'Option 2'}},
+          {value: 'opt3', label: {literalString: 'Option 3'}},
         ],
-        selections: { literalString: 'opt1' },
+        selections: {literalString: 'opt1'},
       }),
     },
     {
       name: 'Slider',
       tag: 'Inputs',
       surface: this.createSingleComponentSurface('Slider', {
-        value: { literalNumber: 50 },
+        value: {literalNumber: 50},
         minValue: 0,
         maxValue: 100,
       }),
@@ -310,13 +311,13 @@ export class LibraryComponent {
       surface: this.createSingleComponentSurface('Column', {
         children: [
           this.createComponent('TextField', {
-            label: { literalString: 'Standard Input' },
-            text: { literalString: 'Some text' },
+            label: {literalString: 'Standard Input'},
+            text: {literalString: 'Some text'},
           }),
           this.createComponent('TextField', {
-            label: { literalString: 'Password' },
+            label: {literalString: 'Password'},
             type: 'password',
-            text: { literalString: '' },
+            text: {literalString: ''},
           }),
         ],
       }),
@@ -331,7 +332,7 @@ export class LibraryComponent {
           name: 'Card',
           surface: this.createSingleComponentSurface('Card', {
             child: this.createComponent('Text', {
-              text: { literalString: 'Content inside a card' },
+              text: {literalString: 'Content inside a card'},
             }),
           }),
         },
@@ -339,9 +340,9 @@ export class LibraryComponent {
           name: 'Column',
           surface: this.createSingleComponentSurface('Column', {
             children: [
-              this.createComponent('Text', { text: { literalString: 'Item 1' } }),
-              this.createComponent('Text', { text: { literalString: 'Item 2' } }),
-              this.createComponent('Text', { text: { literalString: 'Item 3' } }),
+              this.createComponent('Text', {text: {literalString: 'Item 1'}}),
+              this.createComponent('Text', {text: {literalString: 'Item 2'}}),
+              this.createComponent('Text', {text: {literalString: 'Item 3'}}),
             ],
             alignment: 'center',
             distribution: 'space-around',
@@ -351,9 +352,9 @@ export class LibraryComponent {
           name: 'Divider',
           surface: this.createSingleComponentSurface('Column', {
             children: [
-              this.createComponent('Text', { text: { literalString: 'Above Divider' } }),
+              this.createComponent('Text', {text: {literalString: 'Above Divider'}}),
               this.createComponent('Divider', {}),
-              this.createComponent('Text', { text: { literalString: 'Below Divider' } }),
+              this.createComponent('Text', {text: {literalString: 'Below Divider'}}),
             ],
           }),
         },
@@ -361,9 +362,9 @@ export class LibraryComponent {
           name: 'List',
           surface: this.createSingleComponentSurface('List', {
             children: [
-              this.createComponent('Text', { text: { literalString: 'List Item 1' } }),
-              this.createComponent('Text', { text: { literalString: 'List Item 2' } }),
-              this.createComponent('Text', { text: { literalString: 'List Item 3' } }),
+              this.createComponent('Text', {text: {literalString: 'List Item 1'}}),
+              this.createComponent('Text', {text: {literalString: 'List Item 2'}}),
+              this.createComponent('Text', {text: {literalString: 'List Item 3'}}),
             ],
             direction: 'vertical',
           }),
@@ -372,12 +373,12 @@ export class LibraryComponent {
           name: 'Modal',
           surface: this.createSingleComponentSurface('Modal', {
             entryPointChild: this.createComponent('Button', {
-              action: { type: 'none' },
-              child: this.createComponent('Text', { text: { literalString: 'Open Modal' } }),
+              action: {type: 'none'},
+              child: this.createComponent('Text', {text: {literalString: 'Open Modal'}}),
             }),
             contentChild: this.createComponent('Card', {
               child: this.createComponent('Text', {
-                text: { literalString: 'This is the modal content.' },
+                text: {literalString: 'This is the modal content.'},
               }),
             }),
           }),
@@ -386,9 +387,9 @@ export class LibraryComponent {
           name: 'Row',
           surface: this.createSingleComponentSurface('Row', {
             children: [
-              this.createComponent('Text', { text: { literalString: 'Left' } }),
-              this.createComponent('Text', { text: { literalString: 'Center' } }),
-              this.createComponent('Text', { text: { literalString: 'Right' } }),
+              this.createComponent('Text', {text: {literalString: 'Left'}}),
+              this.createComponent('Text', {text: {literalString: 'Center'}}),
+              this.createComponent('Text', {text: {literalString: 'Right'}}),
             ],
             alignment: 'center',
             distribution: 'space-between',
@@ -399,15 +400,15 @@ export class LibraryComponent {
           surface: this.createSingleComponentSurface('Tabs', {
             tabItems: [
               {
-                title: { literalString: 'Tab 1' },
+                title: {literalString: 'Tab 1'},
                 child: this.createComponent('Text', {
-                  text: { literalString: 'Content for Tab 1' },
+                  text: {literalString: 'Content for Tab 1'},
                 }),
               },
               {
-                title: { literalString: 'Tab 2' },
+                title: {literalString: 'Tab 2'},
                 child: this.createComponent('Text', {
-                  text: { literalString: 'Content for Tab 2' },
+                  text: {literalString: 'Content for Tab 2'},
                 }),
               },
             ],
@@ -417,10 +418,10 @@ export class LibraryComponent {
           name: 'Text',
           surface: this.createSingleComponentSurface('Column', {
             children: [
-              this.createComponent('Heading', { text: { literalString: 'Heading Text' } }),
-              this.createComponent('Text', { text: { literalString: 'Standard body text.' } }),
+              this.createComponent('Heading', {text: {literalString: 'Heading Text'}}),
+              this.createComponent('Text', {text: {literalString: 'Standard body text.'}}),
               this.createComponent('Text', {
-                text: { literalString: 'Caption text' },
+                text: {literalString: 'Caption text'},
                 usageHint: 'caption',
               }),
             ],
@@ -434,16 +435,16 @@ export class LibraryComponent {
         {
           name: 'AudioPlayer',
           surface: this.createSingleComponentSurface('AudioPlayer', {
-            url: { literalString: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+            url: {literalString: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'},
           }),
         },
         {
           name: 'Icon',
           surface: this.createSingleComponentSurface('Row', {
             children: [
-              this.createComponent('Icon', { name: { literalString: 'home' } }),
-              this.createComponent('Icon', { name: { literalString: 'favorite' } }),
-              this.createComponent('Icon', { name: { literalString: 'settings' } }),
+              this.createComponent('Icon', {name: {literalString: 'home'}}),
+              this.createComponent('Icon', {name: {literalString: 'favorite'}}),
+              this.createComponent('Icon', {name: {literalString: 'settings'}}),
             ],
             distribution: 'space-around',
           }),
@@ -451,7 +452,7 @@ export class LibraryComponent {
         {
           name: 'Image',
           surface: this.createSingleComponentSurface('Image', {
-            url: { literalString: 'https://picsum.photos/id/10/300/200' },
+            url: {literalString: 'https://picsum.photos/id/10/300/200'},
           }),
         },
         {
@@ -473,14 +474,14 @@ export class LibraryComponent {
           surface: this.createSingleComponentSurface('Row', {
             children: [
               this.createComponent('Button', {
-                label: { literalString: 'Primary' },
-                action: { type: 'click' },
-                child: this.createComponent('Text', { text: { literalString: 'Primary' } }),
+                label: {literalString: 'Primary'},
+                action: {type: 'click'},
+                child: this.createComponent('Text', {text: {literalString: 'Primary'}}),
               }),
               this.createComponent('Button', {
-                label: { literalString: 'Secondary' },
-                action: { type: 'click' },
-                child: this.createComponent('Text', { text: { literalString: 'Secondary' } }),
+                label: {literalString: 'Secondary'},
+                action: {type: 'click'},
+                child: this.createComponent('Text', {text: {literalString: 'Secondary'}}),
               }),
             ],
             distribution: 'space-around',
@@ -491,12 +492,12 @@ export class LibraryComponent {
           surface: this.createSingleComponentSurface('Column', {
             children: [
               this.createComponent('CheckBox', {
-                label: { literalString: 'Unchecked' },
-                value: { literalBoolean: false },
+                label: {literalString: 'Unchecked'},
+                value: {literalBoolean: false},
               }),
               this.createComponent('CheckBox', {
-                label: { literalString: 'Checked' },
-                value: { literalBoolean: true },
+                label: {literalString: 'Checked'},
+                value: {literalBoolean: true},
               }),
             ],
           }),
@@ -508,12 +509,12 @@ export class LibraryComponent {
               this.createComponent('DateTimeInput', {
                 enableDate: true,
                 enableTime: false,
-                value: { literalString: '2025-12-09' },
+                value: {literalString: '2025-12-09'},
               }),
               this.createComponent('DateTimeInput', {
                 enableDate: true,
                 enableTime: true,
-                value: { literalString: '2025-12-09T12:00:00' },
+                value: {literalString: '2025-12-09T12:00:00'},
               }),
             ],
           }),
@@ -522,17 +523,17 @@ export class LibraryComponent {
           name: 'MultipleChoice',
           surface: this.createSingleComponentSurface('MultipleChoice', {
             options: [
-              { value: 'opt1', label: { literalString: 'Option 1' } },
-              { value: 'opt2', label: { literalString: 'Option 2' } },
-              { value: 'opt3', label: { literalString: 'Option 3' } },
+              {value: 'opt1', label: {literalString: 'Option 1'}},
+              {value: 'opt2', label: {literalString: 'Option 2'}},
+              {value: 'opt3', label: {literalString: 'Option 3'}},
             ],
-            selections: { literalString: 'opt1' },
+            selections: {literalString: 'opt1'},
           }),
         },
         {
           name: 'Slider',
           surface: this.createSingleComponentSurface('Slider', {
-            value: { literalNumber: 50 },
+            value: {literalNumber: 50},
             minValue: 0,
             maxValue: 100,
           }),
@@ -542,13 +543,13 @@ export class LibraryComponent {
           surface: this.createSingleComponentSurface('Column', {
             children: [
               this.createComponent('TextField', {
-                label: { literalString: 'Standard Input' },
-                text: { literalString: 'Some text' },
+                label: {literalString: 'Standard Input'},
+                text: {literalString: 'Some text'},
               }),
               this.createComponent('TextField', {
-                label: { literalString: 'Password' },
+                label: {literalString: 'Password'},
                 type: 'password',
-                text: { literalString: '' },
+                text: {literalString: ''},
               }),
             ],
           }),

@@ -1,39 +1,35 @@
 /*
- Copyright 2025 Google LLC
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      https://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import { A2UI_DATA_PART_RENDERER_ENTRY } from '@a2a_chat_canvas/a2a-renderer/catalog/a2ui-data-part/renderer-config';
-import { A2UI_DATA_PART_RESOLVER } from '@a2a_chat_canvas/a2a-renderer/catalog/a2ui-data-part/resolver';
-import { DEFAULT_TEXT_PART_RENDERER_ENTRY } from '@a2a_chat_canvas/a2a-renderer/catalog/default-text-part/renderer-config';
-import { DEFAULT_TEXT_PART_RESOLVER } from '@a2a_chat_canvas/a2a-renderer/catalog/default-text-part/resolver';
-import {
-  ARTIFACT_RESOLVERS,
-  PART_RESOLVERS,
-  RENDERERS,
-} from '@a2a_chat_canvas/a2a-renderer/tokens';
-import { ArtifactResolver, PartResolver, RendererEntry } from '@a2a_chat_canvas/a2a-renderer/types';
-import { theme as a2uiTheme } from '@a2a_chat_canvas/a2ui-catalog/theme';
-import { A2A_SERVICE, A2aService } from '@a2a_chat_canvas/interfaces/a2a-service';
+import {A2UI_DATA_PART_RENDERER_ENTRY} from '@a2a_chat_canvas/a2a-renderer/catalog/a2ui-data-part/renderer-config';
+import {A2UI_DATA_PART_RESOLVER} from '@a2a_chat_canvas/a2a-renderer/catalog/a2ui-data-part/resolver';
+import {DEFAULT_TEXT_PART_RENDERER_ENTRY} from '@a2a_chat_canvas/a2a-renderer/catalog/default-text-part/renderer-config';
+import {DEFAULT_TEXT_PART_RESOLVER} from '@a2a_chat_canvas/a2a-renderer/catalog/default-text-part/resolver';
+import {ARTIFACT_RESOLVERS, PART_RESOLVERS, RENDERERS} from '@a2a_chat_canvas/a2a-renderer/tokens';
+import {ArtifactResolver, PartResolver, RendererEntry} from '@a2a_chat_canvas/a2a-renderer/types';
+import {theme as a2uiTheme} from '@a2a_chat_canvas/a2ui-catalog/theme';
+import {A2A_SERVICE, A2aService} from '@a2a_chat_canvas/interfaces/a2a-service';
 import {
   MARKDOWN_RENDERER_SERVICE,
   MarkdownRendererService,
 } from '@a2a_chat_canvas/interfaces/markdown-renderer-service';
-import { SanitizerMarkdownRendererService } from '@a2a_chat_canvas/services/sanitizer-markdown-renderer-service';
-import { Catalog, Theme } from '@a2ui/angular';
-import { EnvironmentProviders, Provider, Type, makeEnvironmentProviders } from '@angular/core';
-import { DEFAULT_A2UI_CATALOG } from './a2ui-catalog/a2a-chat-canvas-catalog';
+import {SanitizerMarkdownRendererService} from '@a2a_chat_canvas/services/sanitizer-markdown-renderer-service';
+import {Catalog, Theme} from '@a2ui/angular';
+import {EnvironmentProviders, Provider, Type, makeEnvironmentProviders} from '@angular/core';
+import {DEFAULT_A2UI_CATALOG} from './a2ui-catalog/a2a-chat-canvas-catalog';
 
 const DEFAULT_RENDERERS: readonly RendererEntry[] = [
   A2UI_DATA_PART_RENDERER_ENTRY,
@@ -65,7 +61,7 @@ export function configureChatCanvasFeatures(
       defaultPartResolversFeature,
       defaultRenderersFeature,
       ...additionalFeatures,
-    ].map((feature) => feature.providers),
+    ].map(feature => feature.providers),
   ]);
 }
 
@@ -75,7 +71,7 @@ export function configureChatCanvasFeatures(
 export function usingA2aService<T extends A2aService>(a2aServiceClass: Type<T>): A2aFeature {
   return {
     kind: ChatCanvasFeatureKind.A2A_FEATURE,
-    providers: [{ provide: A2A_SERVICE, useClass: a2aServiceClass }],
+    providers: [{provide: A2A_SERVICE, useClass: a2aServiceClass}],
   };
 }
 
@@ -87,7 +83,7 @@ export function usingMarkdownRenderer<T extends MarkdownRendererService>(
 ): MarkdownFeature {
   return {
     kind: ChatCanvasFeatureKind.MARKDOWN_FEATURE,
-    providers: [{ provide: MARKDOWN_RENDERER_SERVICE, useClass: markdownRendererClass }],
+    providers: [{provide: MARKDOWN_RENDERER_SERVICE, useClass: markdownRendererClass}],
   };
 }
 
@@ -106,7 +102,7 @@ export function usingPartResolvers(...partResolvers: readonly PartResolver[]): P
   return {
     kind: ChatCanvasFeatureKind.PART_RESOLVER_FEATURE,
     providers: [
-      partResolvers.map((resolver) => ({
+      partResolvers.map(resolver => ({
         provide: PART_RESOLVERS,
         useValue: resolver,
         multi: true,
@@ -124,7 +120,7 @@ export function usingArtifactResolvers(
   return {
     kind: ChatCanvasFeatureKind.ARTIFACT_RESOLVER_FEATURE,
     providers: [
-      artifactResolvers.map((resolver) => ({
+      artifactResolvers.map(resolver => ({
         provide: ARTIFACT_RESOLVERS,
         useValue: resolver,
         multi: true,
@@ -140,7 +136,7 @@ export function usingRenderers(...renderers: readonly RendererEntry[]): Renderer
   return {
     kind: ChatCanvasFeatureKind.RENDERER_FEATURE,
     providers: [
-      renderers.map((renderer) => ({
+      renderers.map(renderer => ({
         provide: RENDERERS,
         useValue: renderer,
         multi: true,
@@ -152,7 +148,7 @@ export function usingRenderers(...renderers: readonly RendererEntry[]): Renderer
 /**
  * Configures the Chat/Canvas to use A2UI Renderer.
  */
-export function usingA2uiRenderers(customCatalog?: Catalog, theme?: Theme): A2uiFeature {
+export function usingA2uiRenderers(customCatalog?: any, theme?: any): A2uiFeature {
   return {
     kind: ChatCanvasFeatureKind.A2UI_FEATURE,
     providers: [
@@ -163,7 +159,7 @@ export function usingA2uiRenderers(customCatalog?: Catalog, theme?: Theme): A2ui
           ...(customCatalog ?? {}),
         },
       },
-      { provide: Theme, useValue: theme ?? a2uiTheme },
+      {provide: Theme, useValue: theme ?? a2uiTheme},
     ],
   };
 }

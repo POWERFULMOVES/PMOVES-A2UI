@@ -1,29 +1,30 @@
 /*
- Copyright 2025 Google LLC
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-      https://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import { html, css, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import { Root } from "./root.js";
-import * as Primitives from "@a2ui/web_core/types/primitives";
-import { A2uiMessageProcessor } from "@a2ui/web_core/data/model-processor";
-import { classMap } from "lit/directives/class-map.js";
-import { styleMap } from "lit/directives/style-map.js";
-import { structuralStyles } from "./styles.js";
+import {html, css, nothing} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
+import {Root} from './root.js';
+import * as Primitives from '@a2ui/web_core/types/primitives';
+import {A2uiMessageProcessor} from '@a2ui/web_core/data/model-processor';
+import {classMap} from 'lit/directives/class-map.js';
+import {styleMap} from 'lit/directives/style-map.js';
+import {structuralStyles} from './styles.js';
+import {extractStringValue} from './utils/utils.js';
 
-@customElement("a2ui-checkbox")
+@customElement('a2ui-checkbox')
 export class Checkbox extends Root {
   @property()
   accessor value: Primitives.BooleanValue | null = null;
@@ -57,12 +58,12 @@ export class Checkbox extends Root {
     `,
   ];
 
-  #setBoundValue(value: string) {
+  #setBoundValue(value: boolean) {
     if (!this.value || !this.processor) {
       return;
     }
 
-    if (!("path" in this.value)) {
+    if (!('path' in this.value)) {
       return;
     }
 
@@ -74,7 +75,7 @@ export class Checkbox extends Root {
       this.component,
       this.value.path,
       value,
-      this.surfaceId ?? A2uiMessageProcessor.DEFAULT_SURFACE_ID
+      this.surfaceId ?? A2uiMessageProcessor.DEFAULT_SURFACE_ID,
     );
   }
 
@@ -93,25 +94,25 @@ export class Checkbox extends Root {
             return;
           }
 
-          this.#setBoundValue(evt.target.value);
+          this.#setBoundValue(evt.target.checked);
         }}
         id="data"
         type="checkbox"
-        .value=${value}
+        .checked=${value}
       />
       <label class=${classMap(this.theme.components.CheckBox.label)} for="data"
-        >${this.label?.literalString}</label
+        >${extractStringValue(this.label, this.component, this.processor, this.surfaceId)}</label
       >
     </section>`;
   }
 
   render() {
-    if (this.value && typeof this.value === "object") {
-      if ("literalBoolean" in this.value && this.value.literalBoolean) {
+    if (this.value && typeof this.value === 'object') {
+      if ('literalBoolean' in this.value && this.value.literalBoolean) {
         return this.#renderField(this.value.literalBoolean);
-      } else if ("literal" in this.value && this.value.literal !== undefined) {
+      } else if ('literal' in this.value && this.value.literal !== undefined) {
         return this.#renderField(this.value.literal);
-      } else if (this.value && "path" in this.value && this.value.path) {
+      } else if (this.value && 'path' in this.value && this.value.path) {
         if (!this.processor || !this.component) {
           return html`(no model)`;
         }
@@ -119,14 +120,14 @@ export class Checkbox extends Root {
         const textValue = this.processor.getData(
           this.component,
           this.value.path,
-          this.surfaceId ?? A2uiMessageProcessor.DEFAULT_SURFACE_ID
+          this.surfaceId ?? A2uiMessageProcessor.DEFAULT_SURFACE_ID,
         );
 
         if (textValue === null) {
           return html`Invalid label`;
         }
 
-        if (typeof textValue !== "boolean") {
+        if (typeof textValue !== 'boolean') {
           return html`Invalid label`;
         }
 
