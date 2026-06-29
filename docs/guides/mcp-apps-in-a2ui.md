@@ -23,7 +23,7 @@ To prevent this, A2UI strictly excludes `allow-same-origin` for the inner iframe
 ### The Architecture
 
 1.  **[Sandbox Proxy (`sandbox.html`)](https://github.com/a2ui-project/a2ui/blob/main/samples/client/shared/mcp_apps_inner_iframe/sandbox.html)**: An intermediate `iframe` served from the same origin. It isolates raw DOM injection from the main app while maintaining a structured JSON-RPC channel.
-    - Permissions: **Do not sandbox** in the host template (e.g., [`mcp-app.ts`](https://github.com/a2ui-project/a2ui/blob/main/samples/client/angular/projects/mcp_calculator/src/a2ui-catalog/mcp-app.ts) or [`mcp-apps-component.ts`](https://github.com/a2ui-project/a2ui/blob/main/samples/client/lit/custom-components-example/ui/custom-components/mcp-apps-component.ts)).
+    - Permissions: **Do not sandbox** in the host template (e.g., [`mcp-app.ts`](https://github.com/a2ui-project/a2ui/blob/main/samples/community/client/lit/mcp-apps-in-a2ui-sample/mcp-app.ts) or [`mcp-apps-component.ts`](https://github.com/a2ui-project/a2ui/blob/main/samples/community/client/lit/mcp-apps-in-a2ui-sample/ui/custom-components/mcp-apps-component.ts)).
     - Host origin validation: Validates that messages come from the expected host origin.
 2.  **Embedded App (Inner Iframe)**: The innermost `iframe`. Injected dynamically via `srcdoc` with restricted permissions.
     - Permissions: `sandbox="allow-scripts allow-forms allow-popups allow-modals"` (**MUST NOT** include `allow-same-origin`).
@@ -229,18 +229,18 @@ This sample verifies the sandbox with an Angular-based client, an MCP Proxy Agen
 #### Step 1: Start the MCP Server (Calculator)
 
 ```bash
-cd samples/mcp/mcp-apps-calculator/
+cd samples/community/mcp/mcp-apps-calculator/
 uv run .
 ```
 
-The MCP server starts on `http://localhost:8000` using SSE transport.
+The MCP server starts on `http://localhost:8000` (or another port if 8000 is occupied, e.g. `uv run . --port 8001`) using SSE transport.
 
 #### Step 2: Start the MCP Apps Proxy Agent
 
 In a **new terminal**:
 
 ```bash
-cd samples/agent/adk/mcp_app_proxy/
+cd samples/community/agent/adk/mcp_app_proxy/
 export GEMINI_API_KEY="your-key"  # or use a .env file
 uv run .
 ```
@@ -249,20 +249,27 @@ The proxy agent starts on `http://localhost:10006` by default.
 
 #### Step 3: Build and Start the Angular Client
 
-In a **new terminal**:
+First, build the renderer packages by running `yarn build:all` at the **repository root directory**:
 
 ```bash
-cd samples/client/angular/
-
-# Build the renderers (required — Angular depends on local renderer packages)
-yarn build:renderer
-
-yarn install
-yarn build:sandbox
-yarn start -- mcp_calculator
+# Run at repository root
+yarn build:all
 ```
 
-> ⚠️ **`build:renderer` and `build:sandbox` are both required**: `build:renderer` compiles the A2UI renderer packages that the Angular app depends on. `build:sandbox` bundles the sandbox proxy into the Angular project's public assets. Without either, the app won't work.
+Then, in a **new terminal**, navigate to the client directory, install local dependencies, and start the app (which automatically bundles the sandbox iframe proxy and starts the development server):
+
+```bash
+# Navigate to the client directory
+cd samples/community/client/angular/
+
+# Install local dependencies
+yarn install
+
+# Start the app and bundle sandbox
+yarn start mcp_calculator
+```
+
+> ⚠️ **`yarn build:all` is required**: `yarn build:all` compiles the A2UI renderer packages that the Angular app depends on. Running `yarn start mcp_calculator` automatically bundles the sandbox proxy into the Angular project's public assets before starting the server.
 
 The client starts at `http://localhost:4200/`.
 
