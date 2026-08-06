@@ -20,7 +20,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 
-import {GeneratedResult, ValidatedResult, IssueSeverity} from './types';
+import {GeneratedResult, ValidatedResult, IssueSeverity, ProtocolSchemas} from './types';
 import {logger} from './logger';
 
 export class Validator {
@@ -29,17 +29,19 @@ export class Validator {
   private basicFunctions = new Set<string>();
 
   constructor(
-    private schemas: Record<string, any>,
+    private schemas: ProtocolSchemas,
     private outputDir?: string,
   ) {
     // Set strict: false to be lenient with unknown keywords, if any.
     this.ajv = new Ajv({allErrors: true, strict: false});
     addFormats(this.ajv);
     for (const [name, schema] of Object.entries(schemas)) {
-      this.ajv.addSchema(schema, name);
+      if (schema) {
+        this.ajv.addSchema(schema, name);
+      }
     }
     this.validateFn = this.ajv.getSchema(
-      'https://a2ui.org/specification/v1_0/server_to_client.json',
+      'https://a2ui.org/specification/v1_0/agent_to_renderer.json',
     );
 
     // Populate basic functions from the catalog schema
@@ -85,7 +87,7 @@ export class Validator {
           // Smart validation: check which key is present and validate against that specific definition
           // to avoid noisy "oneOf" errors.
           let validated = false;
-          const schemaUri = 'https://a2ui.org/specification/v1_0/server_to_client.json';
+          const schemaUri = 'https://a2ui.org/specification/v1_0/agent_to_renderer.json';
 
           if (message.createSurface) {
             validated = this.ajv.validate(`${schemaUri}#/$defs/CreateSurfaceMessage`, message);
@@ -139,7 +141,7 @@ export class Validator {
                   `catalogs/basic/catalog.json#/components/${componentName}`,
                   obj,
                 );
-              } catch (e) {
+              } catch {
                 // If the schema isn't found, it's a hallucinated component.
                 targetedErrors.push({
                   instancePath: path,
@@ -240,7 +242,7 @@ export class Validator {
 
   private saveFailure(result: GeneratedResult, errors: string[]) {
     if (!this.outputDir) return;
-    const modelDir = path.join(this.outputDir, `output-${result.modelName.replace(/[\/:]/g, '_')}`);
+    const modelDir = path.join(this.outputDir, `output-${result.modelName.replace(/[/:]/g, '_')}`);
     const detailsDir = path.join(modelDir, 'details');
     const failureData = {
       pass: false,
@@ -399,14 +401,7 @@ export class Validator {
     if (data.catalogId === undefined) {
       errors.push("createSurface must have a 'catalogId' property.");
     }
-    const allowed = [
-      'surfaceId',
-      'catalogId',
-      'surfaceProperties',
-      'sendDataModel',
-      'components',
-      'dataModel',
-    ];
+    const allowed = ['surfaceId', 'catalogId', 'sendDataModel', 'components', 'dataModel'];
     for (const key in data) {
       if (!allowed.includes(key)) {
         errors.push(`createSurface has unexpected property: ${key}`);
@@ -483,7 +478,7 @@ export class Validator {
     this.validateDataModelUpdate(data, errors);
   }
 
-  private validateDataModelUpdate(data: any, errors: string[]) {
+  private validateDataModelUpdate(_data: any, _errors: string[]) {
     // Schema validation handles types and basic structure.
     // 'op' is removed in v1.0, so we don't need to validate it or its relationship with 'value'.
     // We strictly rely on the schema for this message type now.
@@ -494,7 +489,7 @@ export class Validator {
   private validateComponent(component: any, allIds: Set<string>, errors: string[]) {
     const id = component.id;
     if (!id) {
-      errors.push(`Component is missing an 'id'.`);
+      errors.push("Component is missing an 'id'.");
       return;
     }
 

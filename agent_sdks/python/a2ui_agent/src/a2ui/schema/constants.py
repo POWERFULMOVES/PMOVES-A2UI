@@ -21,11 +21,40 @@ CATALOG_ID_KEY = "catalogId"
 CATALOG_STYLES_KEY = "styles"
 SURFACE_ID_KEY = "surfaceId"
 
-# Protocol constants
+# Keys whose string values can be safely auto-closed (healed) if fragmented in the stream.
+# Structural or atomic keys (e.g., id, surfaceId, path) are NOT cuttable to prevent
+# incorrect parsing or data binding.
+DEFAULT_CUTTABLE_KEYS = frozenset({
+    "literalString",
+    "valueString",
+    "label",
+    "hint",
+    "caption",
+    "altText",
+    "text",
+})
+
+# A2UI Metadata
+A2UI_CLIENT_CAPABILITIES_KEY = "a2uiClientCapabilities"
 SUPPORTED_CATALOG_IDS_KEY = "supportedCatalogIds"
 INLINE_CATALOGS_KEY = "inlineCatalogs"
+A2UI_CLIENT_DATA_MODEL_KEY = "a2uiClientDataModel"
+A2UI_CLIENT_DATA_MODEL_SURFACES_KEY = "surfaces"
 
-A2UI_CLIENT_CAPABILITIES_KEY = "a2uiClientCapabilities"
+# Client to Server messages
+A2UI_ACTIONS_KEY = "action"
+A2UI_ERROR_KEY = "error"
+
+# Server to Client messages
+A2UI_BEGIN_RENDERING_KEY = "beginRendering"
+A2UI_CREATE_SURFACE_KEY = "createSurface"
+A2UI_DELETE_SURFACE_KEY = "deleteSurface"
+
+# Fields
+A2UI_SURFACE_ID_KEY = "surfaceId"
+A2UI_VERSION_KEY = "version"
+A2UI_CODE_KEY = "code"
+A2UI_MESSAGE_KEY = "message"
 
 BASE_SCHEMA_URL = "https://a2ui.org/"
 INLINE_CATALOG_NAME = "inline"
@@ -33,6 +62,7 @@ INLINE_CATALOG_NAME = "inline"
 VERSION_0_8 = "0.8"
 VERSION_0_9 = "0.9"
 VERSION_0_9_1 = "0.9.1"
+VERSION_1_0 = "1.0"
 
 SPEC_VERSION_MAP = {
     VERSION_0_8: {
@@ -46,6 +76,10 @@ SPEC_VERSION_MAP = {
         SERVER_TO_CLIENT_SCHEMA_KEY: "specification/v0_9_1/json/server_to_client.json",
         COMMON_TYPES_SCHEMA_KEY: "specification/v0_9_1/json/common_types.json",
     },
+    VERSION_1_0: {
+        SERVER_TO_CLIENT_SCHEMA_KEY: "specification/v1_0/json/agent_to_renderer.json",
+        COMMON_TYPES_SCHEMA_KEY: "specification/v1_0/json/common_types.json",
+    },
 }
 
 SPECIFICATION_DIR = "specification"
@@ -54,6 +88,9 @@ ENCODING = "utf-8"
 
 A2UI_OPEN_TAG = "<a2ui-json>"
 A2UI_CLOSE_TAG = "</a2ui-json>"
+
+A2UI_INFERENCE_OPEN_TAG = "<a2ui>"
+A2UI_INFERENCE_CLOSE_TAG = "</a2ui>"
 
 A2UI_SCHEMA_BLOCK_START = "---BEGIN A2UI JSON SCHEMA---"
 A2UI_SCHEMA_BLOCK_END = "---END A2UI JSON SCHEMA---"

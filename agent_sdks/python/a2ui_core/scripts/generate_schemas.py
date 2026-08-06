@@ -15,7 +15,7 @@
 import json
 import os
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 # Base directories
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -87,23 +87,25 @@ def map_json_type_to_python(prop_name: str, prop: Dict[str, Any]) -> str:
 
     if "$ref" in prop:
         ref = prop["$ref"]
-        if "common_types.json" in ref:
-            ref_name = ref.split("/")[-1]
-            return ref_name
-        elif ref.startswith("#/"):
-            return ref.split("/")[-1]
+        if isinstance(ref, str):
+            if "common_types.json" in ref:
+                ref_name = ref.split("/")[-1]
+                return ref_name
+            elif ref.startswith("#/"):
+                return ref.split("/")[-1]
         return "Any"
 
     if "oneOf" in prop or "anyOf" in prop:
         union_items = prop.get("oneOf") or prop.get("anyOf")
-        mapped_items = []
-        for item in union_items:
-            mapped = map_json_type_to_python(prop_name, item)
-            if mapped not in mapped_items:
-                mapped_items.append(mapped)
-        if len(mapped_items) == 1:
-            return mapped_items[0]
-        return f"Union[{', '.join(mapped_items)}]"
+        if union_items is not None:
+            mapped_items = []
+            for item in union_items:
+                mapped = map_json_type_to_python(prop_name, item)
+                if mapped not in mapped_items:
+                    mapped_items.append(mapped)
+            if len(mapped_items) == 1:
+                return mapped_items[0]
+            return f"Union[{', '.join(mapped_items)}]"
 
     if "allOf" in prop:
         allOf_items = prop["allOf"]
@@ -227,7 +229,7 @@ def compile_component_to_pydantic(
     name: str,
     schema: Dict[str, Any],
     base_class: str = "ComponentCommon",
-    common_data: Dict[str, Any] = None,
+    common_data: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Generates Python Pydantic class string representing one Component."""
     lines = [
@@ -263,16 +265,20 @@ def compile_component_to_pydantic(
     return "\n".join(lines) + "\n"
 
 
-def compile_object_def(class_name: str, spec: Dict[str, Any]) -> str:
+def compile_object_def(
+    class_name: str, spec: Dict[str, Any], base_class: Optional[str] = None
+) -> str:
     """Generates Python Pydantic class representing a standard JSON Schema object definition."""
     add_props = spec.get("additionalProperties", False)
     if add_props:
+        bcls = base_class or "BaseModel"
         lines = [
-            f"class {class_name}(BaseModel):",
+            f"class {class_name}({bcls}):",
             "    model_config = ConfigDict(populate_by_name=True)",
         ]
     else:
-        lines = [f"class {class_name}(StrictBaseModel):"]
+        bcls = base_class or "StrictBaseModel"
+        lines = [f"class {class_name}({bcls}):"]
     props = spec.get("properties", {})
     required = spec.get("required", [])
     if not props:
@@ -329,9 +335,9 @@ def compile_function_to_pydantic(name: str, schema: Dict[str, Any]) -> tuple[str
     lines.append(f"class {func_class}(FunctionApi):")
     lines.append(f'    name = "{name}"')
     if args_class != "None":
-        lines.append(f"    args = {args_class}")
+        lines.append(f"    schema = {args_class}")
     else:
-        lines.append("    args = None")
+        lines.append("    schema = None")
     lines.append(f'    return_type = "{return_type}"\n')
 
     return "\n".join(lines), func_class
@@ -348,8 +354,27 @@ def generate_schema_constants() -> str:
 def generate_common_types(common_data: Dict[str, Any]) -> str:
     """Generates common_types.py dynamically from raw JSON specifications."""
     output = [
-        "from typing import Any, Dict, List, Literal, Optional, Union",
-        "from pydantic import BaseModel, Field, ConfigDict\n",
+        "from typing import Annotated, Any, Dict, List, Literal, Optional, Union",
+        "from pydantic import BaseModel, Field, ConfigDict, GetCoreSchemaHandler",
+        "from pydantic_core import CoreSchema\n",
+        (
+            'class ComponentReference:\n    """Base marker class for all A2UI component'
+            ' references."""\n'
+        ),
+        (
+            "class SingleReference(str, ComponentReference):\n    @classmethod\n    def"
+            " __get_pydantic_core_schema__(\n        cls, source_type: Any, handler:"
+            " GetCoreSchemaHandler\n    ) -> CoreSchema:\n        from pydantic_core"
+            " import core_schema\n        return"
+            " core_schema.no_info_after_validator_function(\n            cls,\n        "
+            "    core_schema.str_schema(),\n           "
+            " serialization=core_schema.plain_serializer_function_ser_schema(str),\n   "
+            "     )\n"
+        ),
+        (
+            'class ListReference(ComponentReference):\n    """Marker class indicating a'
+            ' field holds a list of component references."""\n'
+        ),
         "class StrictBaseModel(BaseModel):",
         '    model_config = ConfigDict(extra="forbid", populate_by_name=True)\n',
     ]
@@ -357,7 +382,7 @@ def generate_common_types(common_data: Dict[str, Any]) -> str:
     defs = common_data.get("$defs", {})
 
     # 1. Generate ComponentId type alias
-    output.append("ComponentId = str\n")
+    output.append("ComponentId = SingleReference\n")
 
     # 2. Generate DataBinding
     output.append(compile_object_def("DataBinding", defs["DataBinding"]))
@@ -374,7 +399,13 @@ def generate_common_types(common_data: Dict[str, Any]) -> str:
 
     # 5. Generate TemplateChildList & ChildList dynamically
     template_spec = defs["ChildList"]["oneOf"][1]
-    output.append(compile_object_def("TemplateChildList", template_spec))
+    output.append(
+        compile_object_def(
+            "TemplateChildList",
+            template_spec,
+            base_class="StrictBaseModel, ListReference",
+        )
+    )
     output.append("ChildList = Union[List[ComponentId], TemplateChildList]\n")
 
     # 6. Generate AccessibilityAttributes & CheckRule
@@ -392,7 +423,9 @@ def generate_common_types(common_data: Dict[str, Any]) -> str:
     orig_desc = defs["Action"]["oneOf"][0]["properties"]["event"].get("description")
     event_wrapper_spec = copy.deepcopy(defs["Action"]["oneOf"][0])
     event_wrapper_spec["properties"]["event"] = {
-        "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ActionEvent"
+        "$ref": (
+            "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ActionEvent"
+        )
     }
     if orig_desc:
         event_wrapper_spec["properties"]["event"]["description"] = orig_desc
@@ -409,7 +442,7 @@ def generate_common_types(common_data: Dict[str, Any]) -> str:
 
 
 def generate_basic_catalog_components(
-    catalog_data: Dict[str, Any], common_data: Dict[str, Any] = None
+    catalog_data: Dict[str, Any], common_data: Optional[Dict[str, Any]] = None
 ) -> tuple[str, List[str]]:
     """Generates components.py containing all component schemas extending CatalogComponentCommon."""
     global ALLOW_INLINE_COMPILATION
@@ -420,9 +453,16 @@ def generate_basic_catalog_components(
         "from typing import Any, Dict, List, Literal, Optional, Union, Annotated",
         "from pydantic import BaseModel, Field, ConfigDict\n",
         "from ..schema.common_types import (",
-        "    StrictBaseModel, ComponentCommon, AccessibilityAttributes, DynamicString, DynamicNumber, ",
-        "    DynamicBoolean, DynamicStringList, ChildList, Action, CheckRule, DataBinding, ComponentId",
-        ")\n",
+        (
+            "    StrictBaseModel, ComponentCommon, AccessibilityAttributes,"
+            " DynamicString, DynamicNumber, "
+        ),
+        (
+            "    DynamicBoolean, DynamicStringList, ChildList, Action, CheckRule,"
+            " DataBinding, ComponentId"
+        ),
+        ")",
+        "from ..catalog.components import ModelComponentApi\n",
     ]
 
     # Generate CatalogComponentCommon extending ComponentCommon
@@ -491,7 +531,22 @@ def generate_basic_catalog_components(
     output.append('    Field(..., discriminator="component")')
     output.append("]\n")
 
+    wrapped_names = []
+    for cname in comp_names:
+        if cname.endswith("Component"):
+            base_name = cname[:-9]
+            api_const_name = f"{to_snake_case(base_name).upper()}_COMPONENT_API"
+            output.append(f"{api_const_name} = ModelComponentApi({cname})\n")
+            wrapped_names.append(api_const_name)
+
+    output.append("BASIC_COMPONENTS = [")
+    for wname in wrapped_names:
+        output.append(f"    {wname},")
+    output.append("]\n")
+
     any_comp_names.append("AnyComponent")
+    any_comp_names.append("BASIC_COMPONENTS")
+    any_comp_names.extend(wrapped_names)
     for iname in reversed(inline_names):
         any_comp_names.insert(0, iname)
     any_comp_names.insert(0, "CatalogComponentCommon")
@@ -506,7 +561,10 @@ def generate_basic_catalog_functions(
     output = [
         "from typing import Any, Dict, List, Literal, Optional, Union, Annotated",
         "from pydantic import BaseModel, Field, ConfigDict\n",
-        "from ..schema.common_types import StrictBaseModel, DynamicString, DynamicNumber, DynamicBoolean, DynamicValue, DynamicStringList",
+        (
+            "from ..schema.common_types import StrictBaseModel, DynamicString,"
+            " DynamicNumber, DynamicBoolean, DynamicValue, DynamicStringList"
+        ),
         "from ..catalog.functions import FunctionApi\n",
     ]
 
@@ -552,25 +610,13 @@ def generate_basic_catalog_styles(catalog_data: Dict[str, Any]) -> str:
     return "\n".join(output)
 
 
-def generate_catalog_functions() -> str:
-    """Generates catalog/functions.py containing the FunctionApi base class."""
-    output = [
-        "from typing import Any, Optional\n",
-        "class FunctionApi:",
-        '    name: str = ""',
-        "    args: Optional[Any] = None",
-        '    return_type: str = "void"\n',
-    ]
-    return "\n".join(output)
-
-
 def generate_server_to_client(s2c_data: Dict[str, Any]) -> tuple[str, List[str]]:
     """Generates server_to_client.py containing message envelopes and wrapper types."""
     output = [
         "from typing import Any, Dict, List, Literal, Optional, Union",
         "from pydantic import BaseModel, Field, ConfigDict\n",
         "from .common_types import StrictBaseModel",
-        "from .constants import SPEC_VERSION\n",
+        "from .constants import SPEC_VERSION, SPEC_VERSION_TYPE\n",
     ]
 
     defs = s2c_data.get("$defs", {})
@@ -603,7 +649,7 @@ def generate_server_to_client(s2c_data: Dict[str, Any]) -> tuple[str, List[str]]
             f', alias="{envelope_key}"' if snake_envelope != envelope_key else ""
         )
         output.append(f"class {mname}(StrictBaseModel):")
-        output.append(f"    version: Literal[SPEC_VERSION] = SPEC_VERSION")
+        output.append(f"    version: SPEC_VERSION_TYPE = SPEC_VERSION")
         output.append(f"    {snake_envelope}: {payload_name} = Field(...{alias_opt})")
         output.append("\n")
 
@@ -612,7 +658,8 @@ def generate_server_to_client(s2c_data: Dict[str, Any]) -> tuple[str, List[str]]
     output.append(f"A2uiMessage = Union[{msg_union_str}]\n")
     output.append("class A2uiMessageListWrapper(StrictBaseModel):")
     output.append(
-        '    messages: List[A2uiMessage] = Field(..., description="A list of messages.")'
+        '    messages: List[A2uiMessage] = Field(..., description="A list of'
+        ' messages.")'
     )
 
     return "\n".join(output), msg_names
@@ -624,7 +671,7 @@ def generate_client_capabilities(capabilities_data: Dict[str, Any]) -> str:
         "from typing import Any, Dict, List, Literal, Optional",
         "from pydantic import BaseModel, Field, ConfigDict",
         "from .common_types import StrictBaseModel",
-        "from .constants import SPEC_VERSION\n",
+        "from .constants import SPEC_VERSION, SPEC_VERSION_TYPE\n",
     ]
     defs = capabilities_data.get("$defs", {})
     if "FunctionDefinition" in defs:
@@ -650,7 +697,7 @@ def generate_client_capabilities(capabilities_data: Dict[str, Any]) -> str:
 
     output.append("class A2uiClientCapabilities(StrictBaseModel):")
     output.append(
-        "    v0_9: Optional[V09Capabilities] = Field(None, alias=SPEC_VERSION)"
+        f"    v0_9: Optional[V09Capabilities] = Field(None, alias=SPEC_VERSION)"
     )
 
     code = "\n".join(output)
@@ -664,7 +711,7 @@ def generate_client_to_server(c2s_data: Dict[str, Any]) -> str:
         "from typing import Any, Dict, List, Literal, Optional, Union",
         "from pydantic import BaseModel, Field, ConfigDict",
         "from .common_types import StrictBaseModel",
-        "from .constants import SPEC_VERSION\n",
+        "from .constants import SPEC_VERSION, SPEC_VERSION_TYPE\n",
     ]
     props = c2s_data.get("properties", {})
 
@@ -689,12 +736,12 @@ def generate_client_to_server(c2s_data: Dict[str, Any]) -> str:
         output.append(f"A2uiClientError = Union[{', '.join(error_class_names)}]\n")
 
     output.append("class A2uiClientActionMessage(StrictBaseModel):")
-    output.append(f"    version: Literal[SPEC_VERSION] = SPEC_VERSION")
+    output.append(f"    version: SPEC_VERSION_TYPE = SPEC_VERSION")
     output.append("    action: A2uiClientAction = Field(...)")
     output.append("\n")
 
     output.append("class A2uiClientErrorMessage(StrictBaseModel):")
-    output.append(f"    version: Literal[SPEC_VERSION] = SPEC_VERSION")
+    output.append(f"    version: SPEC_VERSION_TYPE = SPEC_VERSION")
     output.append("    error: A2uiClientError = Field(...)")
     output.append("\n")
 
@@ -704,9 +751,10 @@ def generate_client_to_server(c2s_data: Dict[str, Any]) -> str:
 
     # Client Data Model
     output.append("class A2uiClientDataModel(StrictBaseModel):")
-    output.append(f"    version: Literal[SPEC_VERSION] = SPEC_VERSION")
+    output.append(f"    version: SPEC_VERSION_TYPE = SPEC_VERSION")
     output.append(
-        '    surfaces: Dict[str, Dict[str, Any]] = Field(..., description="A map of surface IDs to their current data models.")\n'
+        '    surfaces: Dict[str, Dict[str, Any]] = Field(..., description="A map of'
+        ' surface IDs to their current data models.")\n'
     )
 
     # Client Message List and List Wrapper
@@ -714,7 +762,8 @@ def generate_client_to_server(c2s_data: Dict[str, Any]) -> str:
 
     output.append("class A2uiClientMessageListWrapper(StrictBaseModel):")
     output.append(
-        '    messages: A2uiClientMessageList = Field(..., description="An object wrapping a list of A2UI Client-to-Server messages.")'
+        '    messages: A2uiClientMessageList = Field(..., description="An object'
+        ' wrapping a list of A2UI Client-to-Server messages.")'
     )
     return "\n".join(output)
 
@@ -723,40 +772,47 @@ def generate_schema_init(msg_names: List[str]) -> str:
     """Generates schema/__init__.py re-exporting only common types and server messages."""
     output = [
         "from .common_types import (",
-        "    StrictBaseModel, DataBinding, FunctionCall, AccessibilityAttributes, ",
-        "    CheckRule, ActionEvent, Action, ComponentCommon",
+        "    StrictBaseModel as StrictBaseModel,",
+        "    DataBinding as DataBinding,",
+        "    FunctionCall as FunctionCall,",
+        "    AccessibilityAttributes as AccessibilityAttributes,",
+        "    CheckRule as CheckRule,",
+        "    ActionEvent as ActionEvent,",
+        "    Action as Action,",
+        "    ComponentCommon as ComponentCommon,",
         ")",
         "from .constants import *",
         "from .server_to_client import (",
     ]
     for mname in msg_names:
-        output.append(f"    {mname},")
-        output.append(f"    {mname.replace('Message', '')},")
-    output.append("    A2uiMessage,")
-    output.append("    A2uiMessageListWrapper,")
+        output.append(f"    {mname} as {mname},")
+        rname = mname.replace("Message", "")
+        output.append(f"    {rname} as {rname},")
+    output.append("    A2uiMessage as A2uiMessage,")
+    output.append("    A2uiMessageListWrapper as A2uiMessageListWrapper,")
     output.append(")")
     output.append("from .client_capabilities import (")
-    output.append("    A2uiClientCapabilities,")
-    output.append("    V09Capabilities,")
-    output.append("    InlineCatalog,")
-    output.append("    FunctionDefinition,")
+    output.append("    A2uiClientCapabilities as A2uiClientCapabilities,")
+    output.append("    V09Capabilities as V09Capabilities,")
+    output.append("    InlineCatalog as InlineCatalog,")
+    output.append("    FunctionDefinition as FunctionDefinition,")
     output.append(")")
     output.append("from .client_to_server import (")
-    output.append("    A2uiClientMessage,")
-    output.append("    A2uiClientActionMessage,")
-    output.append("    A2uiClientErrorMessage,")
-    output.append("    A2uiClientAction,")
-    output.append("    A2uiValidationError,")
-    output.append("    A2uiGenericError,")
-    output.append("    A2uiClientError,")
-    output.append("    A2uiClientDataModel,")
-    output.append("    A2uiClientMessageList,")
-    output.append("    A2uiClientMessageListWrapper,")
+    output.append("    A2uiClientMessage as A2uiClientMessage,")
+    output.append("    A2uiClientActionMessage as A2uiClientActionMessage,")
+    output.append("    A2uiClientErrorMessage as A2uiClientErrorMessage,")
+    output.append("    A2uiClientAction as A2uiClientAction,")
+    output.append("    A2uiValidationError as A2uiValidationError,")
+    output.append("    A2uiGenericError as A2uiGenericError,")
+    output.append("    A2uiClientError as A2uiClientError,")
+    output.append("    A2uiClientDataModel as A2uiClientDataModel,")
+    output.append("    A2uiClientMessageList as A2uiClientMessageList,")
+    output.append("    A2uiClientMessageListWrapper as A2uiClientMessageListWrapper,")
     output.append(")")
     return "\n".join(output)
 
 
-def main():
+def main() -> None:
     print("Compiling modular and symmetrical A2UI schemas mirroring web_core...")
 
     os.makedirs(SCHEMA_DIR, exist_ok=True)
@@ -777,13 +833,7 @@ def main():
             f.write(FILE_HEADER + constants_code)
         print(f"Generated: {CONSTANTS_OUT_PATH}")
 
-    # 2 Generate catalog/functions.py
-    catalog_functions_code = generate_catalog_functions()
-    with open(CATALOG_FUNCTIONS_OUT_PATH, "w") as f:
-        f.write(FILE_HEADER + catalog_functions_code)
-    print(f"Generated: {CATALOG_FUNCTIONS_OUT_PATH}")
-
-    # 3. Generate basic_catalog/components.py
+    # 2. Generate basic_catalog/components.py
     with open(BASIC_CATALOG_PATH, "r") as f:
         catalog_data = json.load(f)
     catalog_code, comp_names = generate_basic_catalog_components(
@@ -793,19 +843,19 @@ def main():
         f.write(FILE_HEADER + catalog_code)
     print(f"Generated: {COMPONENTS_OUT_PATH}")
 
-    # 4. Generate basic_catalog/function_apis.py
+    # 3. Generate basic_catalog/function_apis.py
     functions_code, func_names = generate_basic_catalog_functions(catalog_data)
     with open(FUNCTION_APIS_OUT_PATH, "w") as f:
         f.write(FILE_HEADER + functions_code)
     print(f"Generated: {FUNCTION_APIS_OUT_PATH}")
 
-    # 5. Generate basic_catalog/styles.py
+    # 4. Generate basic_catalog/styles.py
     styles_code = generate_basic_catalog_styles(catalog_data)
     with open(STYLES_OUT_PATH, "w") as f:
         f.write(FILE_HEADER + styles_code)
     print(f"Generated: {STYLES_OUT_PATH}")
 
-    # 6. Generate schema/server_to_client.py
+    # 5.1. Generate schema/server_to_client.py
     with open(SERVER_TO_CLIENT_PATH, "r") as f:
         s2c_data = json.load(f)
     s2c_code, msg_names = generate_server_to_client(s2c_data)
@@ -813,7 +863,7 @@ def main():
         f.write(FILE_HEADER + s2c_code)
     print(f"Generated: {SERVER_TO_CLIENT_OUT_PATH}")
 
-    # 6.1 Generate schema/client_capabilities.py
+    # 5.2 Generate schema/client_capabilities.py
     with open(CLIENT_CAPABILITIES_PATH, "r") as f:
         cc_data = json.load(f)
     cc_code = generate_client_capabilities(cc_data)
@@ -821,7 +871,7 @@ def main():
         f.write(FILE_HEADER + cc_code)
     print(f"Generated: {CLIENT_CAPABILITIES_OUT_PATH}")
 
-    # 6.2 Generate schema/client_to_server.py
+    # 5.3 Generate schema/client_to_server.py
     with open(CLIENT_TO_SERVER_PATH, "r") as f:
         cts_data = json.load(f)
     cts_code = generate_client_to_server(cts_data)
@@ -829,13 +879,13 @@ def main():
         f.write(FILE_HEADER + cts_code)
     print(f"Generated: {CLIENT_TO_SERVER_OUT_PATH}")
 
-    # 7. Generate schema/__init__.py
+    # 6. Generate schema/__init__.py
     schema_init_code = generate_schema_init(msg_names)
     with open(SCHEMA_INIT_OUT_PATH, "w") as f:
         f.write(FILE_HEADER + schema_init_code)
     print(f"Generated: {SCHEMA_INIT_OUT_PATH}")
 
-    # 8. Auto-format all generated files with pyink
+    # 7. Auto-format all generated files with pyink
     try:
         import subprocess
 
@@ -849,10 +899,9 @@ def main():
             CLIENT_CAPABILITIES_OUT_PATH,
             CLIENT_TO_SERVER_OUT_PATH,
             SCHEMA_INIT_OUT_PATH,
-            CATALOG_FUNCTIONS_OUT_PATH,
         ]
-        # Format files using pyink via isolated environment
-        cmd = ["uvx", "pyink"] + generated_files
+        # Format files using pyink via workspace environment
+        cmd = ["uv", "run", "pyink"] + generated_files
         subprocess.run(cmd, cwd=os.path.join(SCRIPT_DIR, "../"), check=True)
         print("Successfully formatted generated files using pyink!")
     except Exception as e:

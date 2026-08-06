@@ -17,7 +17,7 @@
 import {componentGeneratorFlow} from './generation_flow';
 import {ModelConfiguration} from './models';
 import {TestPrompt} from './prompts';
-import {GeneratedResult} from './types';
+import {GeneratedResult, ProtocolSchemas} from './types';
 import {extractJsonFromMarkdown} from './utils';
 import {rateLimiter} from './rateLimiter';
 import {logger} from './logger';
@@ -26,7 +26,7 @@ import * as path from 'path';
 
 export class Generator {
   constructor(
-    private schemas: any,
+    private schemas: ProtocolSchemas,
     private outputDir?: string,
     private catalogRules?: string,
   ) {}
@@ -148,7 +148,7 @@ export class Generator {
     components: any[],
   ) {
     if (!this.outputDir) return;
-    const modelDir = path.join(this.outputDir, `output-${model.name.replace(/[\/:]/g, '_')}`);
+    const modelDir = path.join(this.outputDir, `output-${model.name.replace(/[/:]/g, '_')}`);
     const detailsDir = path.join(modelDir, 'details');
     fs.mkdirSync(detailsDir, {recursive: true});
 
@@ -183,7 +183,7 @@ ${prompt.promptText
     error: any,
   ) {
     if (!this.outputDir) return;
-    const modelDir = path.join(this.outputDir, `output-${model.name.replace(/[\/:]/g, '_')}`);
+    const modelDir = path.join(this.outputDir, `output-${model.name.replace(/[/:]/g, '_')}`);
     const detailsDir = path.join(modelDir, 'details');
     fs.mkdirSync(detailsDir, {recursive: true});
 

@@ -28,7 +28,8 @@ The first step in any A2UI-enabled agent is initializing the
 
 ```python
 from a2ui.schema.constants import VERSION_0_9
-from a2ui.schema.manager import A2uiSchemaManager, CatalogConfig
+from a2ui.strategies.schema import A2uiSchemaManager
+from a2ui.schema.catalog import CatalogConfig
 from a2ui.basic_catalog.provider import BasicCatalog
 
 # Define your catalogs (basic or bring your own) with optional examples
@@ -56,7 +57,7 @@ Notes:
 - The provided catalogs must be freestanding, i.e. they should not reference any
   external schemas or components, except for the common types.
 - If you have a modular catalog that references other catalogs, refer
-  to [Freestanding Catalogs](../../../docs/catalogs.md#freestanding-catalogs)
+  to [Freestanding Catalogs](../../../docs/public/concepts/catalogs.md#freestanding-catalogs)
   for more information.
 - You can define multiple `A2uiSchemaManager` instances (one for each protocol version)
   and select the active one at runtime based on the client request.
@@ -188,7 +189,7 @@ yield {
 
 ##### Option B: Incremental Streaming Parsing (Advanced)
 
-Use this approach for sub-second UI updates. The `A2uiStreamParser` **automatically parses, validates, and fixes (heals)** the JSON payload chunks _incrementally_ as they arrive from the LLM stream. It yields valid UI messages _before_ the entire JSON block is complete by automatically closing open quotes and braces.
+Use this approach for sub-second UI updates. The `DirectJsonStreamParser` **automatically parses, validates, and fixes (heals)** the JSON payload chunks _incrementally_ as they arrive from the LLM stream. It yields valid UI messages _before_ the entire JSON block is complete by automatically closing open quotes and braces.
 
 > [!IMPORTANT]
 > **Prerequisite**: To use incremental streaming, your agent executor must support streaming mode. In ADK, enable this using `RunConfig`:
@@ -200,10 +201,10 @@ Use this approach for sub-second UI updates. The `A2uiStreamParser` **automatica
 > ```
 
 ```python
-from a2ui.parser.streaming import A2uiStreamParser
+from a2ui.inference_formats.direct_json.streaming import DirectJsonStreamParser
 from a2ui.a2a.parts import create_a2ui_part
 
-parser = A2uiStreamParser(catalog=selected_catalog)
+parser = DirectJsonStreamParser(catalog=selected_catalog)
 
 # Inside your LLM stream loop:
 for chunk in llm_response_stream:
@@ -226,7 +227,7 @@ for chunk in llm_response_stream:
 ```
 
 > [!TIP]
-> `A2uiStreamParser` performs content-based change detection to ensure components are only re-yielded if their content changes, minimizing bandwidth usage.
+> `DirectJsonStreamParser` performs content-based change detection to ensure components are only re-yielded if their content changes, minimizing bandwidth usage.
 
 ## Use Cases
 
@@ -259,7 +260,7 @@ user's request, client capabilities, or conversational context. This is common
 for dashboard-style agents that support multiple distinct visualization types (
 e.g., Charts vs. Maps).
 
-**Example Sample:** [rizzcharts](../../../samples/agent/adk/rizzcharts/python)
+**Example Sample:** [rizzcharts](../../../samples/community/agent/adk/rizzcharts/python)
 
 #### 2a. Injecting Catalogs into Session State
 
@@ -370,7 +371,7 @@ else:
 Orchestrator agents delegate work to sub-agents. They often need to propagate UI
 capabilities and handle cross-agent UI state.
 
-**Example Sample:** [orchestrator](../../../samples/agent/adk/orchestrator)
+**Example Sample:** [orchestrator](../../../samples/community/agent/adk/orchestrator)
 
 The orchestrator inspects sub-agent capabilities and aggregates their supported
 catalog IDs into its own `AgentCard`.
@@ -400,7 +401,7 @@ agent_card = AgentCard(
 
 #### Setting or Propagating Client Capabilities on Remote A2A Agents
 
-When calling remote A2A agents (such as delegating to a sub-agent or proxying to a backend A2A stubby agent) via ADK `RemoteA2aAgent`, you must ensure that the remote agent receives the client's UI capabilities in its request metadata under `a2uiClientCapabilities`.
+When calling remote A2A agents (such as delegating to a sub-agent or proxying to a backend A2A stubby agent) via ADK `RemoteA2aAgent`, you must ensure that the remote agent receives the client's UI capabilities in the `metadata` field of the A2A `Message` under the key `a2uiClientCapabilities`.
 
 You can configure an `A2aRemoteAgentConfig` with a `before_request` interceptor (`RequestInterceptor`) to inject this metadata. There are two common scenarios:
 

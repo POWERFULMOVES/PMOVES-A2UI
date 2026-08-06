@@ -26,7 +26,7 @@ class RequiredArgs(StrictBaseModel):
 
 class RequiredApi(FunctionApi):
     name = "required"
-    args = RequiredArgs
+    schema = RequiredArgs
     return_type = "boolean"
 
 
@@ -37,7 +37,7 @@ class RegexArgs(StrictBaseModel):
 
 class RegexApi(FunctionApi):
     name = "regex"
-    args = RegexArgs
+    schema = RegexArgs
     return_type = "boolean"
 
 
@@ -49,7 +49,7 @@ class LengthArgs(StrictBaseModel):
 
 class LengthApi(FunctionApi):
     name = "length"
-    args = LengthArgs
+    schema = LengthArgs
     return_type = "boolean"
 
 
@@ -61,7 +61,7 @@ class NumericArgs(StrictBaseModel):
 
 class NumericApi(FunctionApi):
     name = "numeric"
-    args = NumericArgs
+    schema = NumericArgs
     return_type = "boolean"
 
 
@@ -71,7 +71,7 @@ class EmailArgs(StrictBaseModel):
 
 class EmailApi(FunctionApi):
     name = "email"
-    args = EmailArgs
+    schema = EmailArgs
     return_type = "boolean"
 
 
@@ -81,7 +81,7 @@ class FormatStringArgs(StrictBaseModel):
 
 class FormatStringApi(FunctionApi):
     name = "formatString"
-    args = FormatStringArgs
+    schema = FormatStringArgs
     return_type = "string"
 
 
@@ -89,17 +89,23 @@ class FormatNumberArgs(StrictBaseModel):
     value: DynamicNumber = Field(..., description="The number to format.")
     decimals: Optional[DynamicNumber] = Field(
         None,
-        description="Optional. The number of decimal places to show. Defaults to 0 or 2 depending on locale.",
+        description=(
+            "Optional. The number of decimal places to show. Defaults to 0 or 2"
+            " depending on locale."
+        ),
     )
     grouping: Optional[DynamicBoolean] = Field(
         None,
-        description="Optional. If true, uses locale-specific grouping separators (e.g. '1,000'). If false, returns raw digits (e.g. '1000'). Defaults to true.",
+        description=(
+            "Optional. If true, uses locale-specific grouping separators (e.g."
+            " '1,000'). If false, returns raw digits (e.g. '1000'). Defaults to true."
+        ),
     )
 
 
 class FormatNumberApi(FunctionApi):
     name = "formatNumber"
-    args = FormatNumberArgs
+    schema = FormatNumberArgs
     return_type = "string"
 
 
@@ -110,17 +116,23 @@ class FormatCurrencyArgs(StrictBaseModel):
     )
     decimals: Optional[DynamicNumber] = Field(
         None,
-        description="Optional. The number of decimal places to show. Defaults to 0 or 2 depending on locale.",
+        description=(
+            "Optional. The number of decimal places to show. Defaults to 0 or 2"
+            " depending on locale."
+        ),
     )
     grouping: Optional[DynamicBoolean] = Field(
         None,
-        description="Optional. If true, uses locale-specific grouping separators (e.g. '1,000'). If false, returns raw digits (e.g. '1000'). Defaults to true.",
+        description=(
+            "Optional. If true, uses locale-specific grouping separators (e.g."
+            " '1,000'). If false, returns raw digits (e.g. '1000'). Defaults to true."
+        ),
     )
 
 
 class FormatCurrencyApi(FunctionApi):
     name = "formatCurrency"
-    args = FormatCurrencyArgs
+    schema = FormatCurrencyArgs
     return_type = "string"
 
 
@@ -128,13 +140,22 @@ class FormatDateArgs(StrictBaseModel):
     value: DynamicValue = Field(..., description="The date to format.")
     format: DynamicString = Field(
         ...,
-        description="A Unicode TR35 date pattern string.  Token Reference: - Year: 'yy' (26), 'yyyy' (2026) - Month: 'M' (1), 'MM' (01), 'MMM' (Jan), 'MMMM' (January) - Day: 'd' (1), 'dd' (01), 'E' (Tue), 'EEEE' (Tuesday) - Hour (12h): 'h' (1-12), 'hh' (01-12) - requires 'a' for AM/PM - Hour (24h): 'H' (0-23), 'HH' (00-23) - Military Time - Minute: 'mm' (00-59) - Second: 'ss' (00-59) - Period: 'a' (AM/PM)  Examples: - 'MMM dd, yyyy' -> 'Jan 16, 2026' - 'HH:mm' -> '14:30' (Military) - 'h:mm a' -> '2:30 PM' - 'EEEE, d MMMM' -> 'Friday, 16 January'",
+        description=(
+            "A Unicode TR35 date pattern string.  Token Reference: - Year: 'yy' (26),"
+            " 'yyyy' (2026) - Month: 'M' (1), 'MM' (01), 'MMM' (Jan), 'MMMM' (January)"
+            " - Day: 'd' (1), 'dd' (01), 'E' (Tue), 'EEEE' (Tuesday) - Hour (12h): 'h'"
+            " (1-12), 'hh' (01-12) - requires 'a' for AM/PM - Hour (24h): 'H' (0-23),"
+            " 'HH' (00-23) - Military Time - Minute: 'mm' (00-59) - Second: 'ss'"
+            " (00-59) - Period: 'a' (AM/PM)  Examples: - 'MMM dd, yyyy' -> 'Jan 16,"
+            " 2026' - 'HH:mm' -> '14:30' (Military) - 'h:mm a' -> '2:30 PM' - 'EEEE, d"
+            " MMMM' -> 'Friday, 16 January'"
+        ),
     )
 
 
 class FormatDateApi(FunctionApi):
     name = "formatDate"
-    args = FormatDateArgs
+    schema = FormatDateArgs
     return_type = "string"
 
 
@@ -153,11 +174,15 @@ class PluralizeArgs(StrictBaseModel):
     )
     few: Optional[DynamicString] = Field(
         None,
-        description="String for the 'few' category (e.g., small groups in Slavic languages).",
+        description=(
+            "String for the 'few' category (e.g., small groups in Slavic languages)."
+        ),
     )
     many: Optional[DynamicString] = Field(
         None,
-        description="String for the 'many' category (e.g., large groups in various languages).",
+        description=(
+            "String for the 'many' category (e.g., large groups in various languages)."
+        ),
     )
     other: DynamicString = Field(
         ..., description="The default/fallback string (used for general plural cases)."
@@ -166,7 +191,7 @@ class PluralizeArgs(StrictBaseModel):
 
 class PluralizeApi(FunctionApi):
     name = "pluralize"
-    args = PluralizeArgs
+    schema = PluralizeArgs
     return_type = "string"
 
 
@@ -176,7 +201,7 @@ class OpenUrlArgs(StrictBaseModel):
 
 class OpenUrlApi(FunctionApi):
     name = "openUrl"
-    args = OpenUrlArgs
+    schema = OpenUrlArgs
     return_type = "void"
 
 
@@ -188,7 +213,7 @@ class AndArgs(StrictBaseModel):
 
 class AndApi(FunctionApi):
     name = "and"
-    args = AndArgs
+    schema = AndArgs
     return_type = "boolean"
 
 
@@ -200,7 +225,7 @@ class OrArgs(StrictBaseModel):
 
 class OrApi(FunctionApi):
     name = "or"
-    args = OrArgs
+    schema = OrArgs
     return_type = "boolean"
 
 
@@ -210,5 +235,5 @@ class NotArgs(StrictBaseModel):
 
 class NotApi(FunctionApi):
     name = "not"
-    args = NotArgs
+    schema = NotArgs
     return_type = "boolean"

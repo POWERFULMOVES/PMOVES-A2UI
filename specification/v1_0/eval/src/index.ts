@@ -20,21 +20,21 @@ import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 import {logger, setupLogger} from './logger';
 import {modelsToTest} from './models';
-import {prompts, TestPrompt} from './prompts';
+import {prompts} from './prompts';
 import {Generator} from './generator';
 import {Validator} from './validator';
 import {Evaluator} from './evaluator';
-import {EvaluatedResult} from './types';
+import {EvaluatedResult, ProtocolSchemas} from './types';
 import {analysisFlow} from './analysis_flow';
 
 const schemaFiles = [
   '../../json/common_types.json',
   '../../catalogs/basic/catalog.json',
-  '../../json/server_to_client.json',
+  '../../json/agent_to_renderer.json',
 ];
 
-function loadSchemas(): Record<string, any> {
-  const schemas: Record<string, any> = {};
+function loadSchemas(): ProtocolSchemas {
+  const schemas: ProtocolSchemas = {};
   for (const file of schemaFiles) {
     const schemaString = fs.readFileSync(path.join(__dirname, file), 'utf-8');
     const schema = JSON.parse(schemaString);
@@ -42,7 +42,7 @@ function loadSchemas(): Record<string, any> {
     schemas[key] = schema;
   }
 
-  // Alias catalogs/basic/catalog.json to catalog.json to match server_to_client.json references
+  // Alias catalogs/basic/catalog.json to catalog.json to match agent_to_renderer.json references
   // This mirrors the logic in run_tests.py
   if (schemas['catalogs/basic/catalog.json']) {
     const catalogSchema = JSON.parse(JSON.stringify(schemas['catalogs/basic/catalog.json']));
@@ -221,7 +221,7 @@ function generateSummary(
       ? '0.0'
       : (((totalRuns - totalRunsWithAnyFailure) / totalRuns) * 100.0).toFixed(1);
   summary += `\n- **Number of runs with any failure (tool error, validation, or eval):** ${totalRunsWithAnyFailure} / ${totalRuns} (${successPercentage}% success)`;
-  summary += `\n- **Severity Breakdown:**`;
+  summary += '\n- **Severity Breakdown:**';
   summary += `\n  - **Minor:** ${totalMinor}`;
   summary += `\n  - **Significant:** ${totalSignificant}`;
   summary += `\n  - **Critical (Eval):** ${totalCritical}`;
@@ -343,7 +343,7 @@ async function main() {
   // Configure global logger. File logging is currently only supported when testing a single model.
   if (resultsBaseDir) {
     if (filteredModels.length === 1) {
-      const modelDirName = `output-${filteredModels[0].name.replace(/[\/:]/g, '_')}`;
+      const modelDirName = `output-${filteredModels[0].name.replace(/[/:]/g, '_')}`;
       setupLogger(path.join(resultsBaseDir, modelDirName), argv['log-level']);
     } else {
       setupLogger(undefined, argv['log-level']);
@@ -353,17 +353,7 @@ async function main() {
   }
 
   const schemas = loadSchemas();
-  let catalogRules: string | undefined;
-  const catalogInstructions = schemas['catalogs/basic/catalog.json']?.instructions;
-  if (catalogInstructions) {
-    const catalogPath = path.join(__dirname, '../../catalogs/basic/catalog.json');
-    const catalogRulesPath = path.resolve(path.dirname(catalogPath), catalogInstructions);
-    if (fs.existsSync(catalogRulesPath)) {
-      catalogRules = fs.readFileSync(catalogRulesPath, 'utf-8');
-    } else {
-      logger.warn(`Catalog rules file not found at ${catalogRulesPath}.`);
-    }
-  }
+  const catalogRules: string | undefined = schemas['catalogs/basic/catalog.json']?.instructions;
 
   // Phase 1: Generation
   const generator = new Generator(schemas, resultsBaseDir, catalogRules);
@@ -453,7 +443,7 @@ async function main() {
   if (resultsBaseDir) {
     // Save a copy of the evaluation summary to each model's output directory.
     for (const model of filteredModels) {
-      const modelDirName = `output-${model.name.replace(/[\/:]/g, '_')}`;
+      const modelDirName = `output-${model.name.replace(/[/:]/g, '_')}`;
       const modelDir = path.join(resultsBaseDir, modelDirName);
       if (fs.existsSync(modelDir)) {
         fs.writeFileSync(path.join(modelDir, 'summary.md'), summary);

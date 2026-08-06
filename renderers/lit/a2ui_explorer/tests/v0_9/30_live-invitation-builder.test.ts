@@ -85,6 +85,15 @@ describe('Example: Live Invitation Builder', () => {
     expect(textContent).toContain('2025');
   });
 
+  it('should render date time input', async () => {
+    const dateTimeInput = querySelectorAllDeep(
+      surface,
+      '.a2ui-date-time-input',
+    )[0] as HTMLInputElement;
+    expect(dateTimeInput).withContext('Should have a date time input element').toBeTruthy();
+    expect(dateTimeInput.value).toContain('2025-07-15');
+  });
+
   it('should render image', async () => {
     const img = querySelectorAllDeep(surface, 'img')[0] as HTMLImageElement;
     expect(img).toBeTruthy();
@@ -104,10 +113,13 @@ describe('Example: Live Invitation Builder', () => {
     expect(textInputs.length).toBeGreaterThanOrEqual(2);
 
     const nameInput = textInputs[0];
+    expect(nameInput.value).withContext('nameInput initial value').toBe('Summer Gala');
+    const guestInput = textInputs[1];
+    expect(guestInput.value).withContext('guestInput initial value').toBe('Alex Johnson');
+
     nameInput.value = 'Awesome Party';
     nameInput.dispatchEvent(new Event('input'));
 
-    const guestInput = textInputs[1];
     guestInput.value = 'Alex Johnson';
     guestInput.dispatchEvent(new Event('input'));
 
@@ -124,10 +136,13 @@ describe('Example: Live Invitation Builder', () => {
     expect(textInputs.length).toBeGreaterThanOrEqual(2);
 
     const nameInput = textInputs[0];
+    expect(nameInput.value).withContext('nameInput initial value 2').toBe('Summer Gala');
+    const guestInput = textInputs[1];
+    expect(guestInput.value).withContext('guestInput initial value 2').toBe('Alex Johnson');
+
     nameInput.value = 'Summer Gala';
     nameInput.dispatchEvent(new Event('input'));
 
-    const guestInput = textInputs[1];
     guestInput.value = 'John Doe';
     guestInput.dispatchEvent(new Event('input'));
 
